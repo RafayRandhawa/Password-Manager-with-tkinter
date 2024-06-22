@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import random
 import pyperclip
+import json
 
 OFF_WHITE = "#FFF5E1"
 LIGHT_RED = "#FF6969"
@@ -31,30 +32,68 @@ def generate_password():
     password_list = password_list_numbers + password_list_symbols + password_list_letters
     random.shuffle(password_list)
 
-    password = "".join(password_list)
+    generated_password = "".join(password_list)
     password_text.delete(0, END)
-    password_text.insert(0, password)
-    pyperclip.copy(password)
+    password_text.insert(0, generated_password)
+    pyperclip.copy(generated_password)
+
+
+# ---------------------------- SEARCH PASSWORD ----------------------------- #
+def search_password():
+    try:
+        with open(file="D:/Python/Password Manager/passwords.json", mode="r") as file:
+            file_data = json.load(file)
+    except FileNotFoundError:
+        messagebox.showinfo(title="No Data", message="It seems you haven't saved any passwords yet...")
+    else:
+        search_parameter = website_text.get()
+        if len(search_parameter) == 0:
+            messagebox.showinfo(title="Which password do you want?",
+                                message="Please enter the name of the website to get the password for")
+        else:
+            try:
+                website_data = file_data[search_parameter]
+                print(website_data)
+            except KeyError:
+                messagebox.showinfo(title="Sorry", message="There is no registered password against this website")
+            else:
+                email_text.delete(0, END)
+                password_text.delete(0, END)
+                email_text.insert(0, website_data["email"])
+                password_text.insert(0, website_data["password"])
+                pyperclip.copy(website_data["password"])
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def add_password():
-    with open(file="passwords.txt", mode="a") as file:
-        website = website_text.get()
-        email = email_text.get()
-        password_ = password_text.get()
-        if len(website) == 0 or len(password_) == 0:
-            messagebox.showwarning(title="Warning", message="Please make sure no fields are empty")
-        elif email == "123@abc,com":
-            messagebox.showwarning(title="Warning", message="You forgot to enter your email")
-        else:
-            is_ok = messagebox.askokcancel(title="Confirm Data",
-                                           message=f"Please check the details\nWebsite: {website}\nEmail: {email}\nPassword:{password_}\nIs this okay?")
-            if is_ok:
-                website_text.delete(0, END)
-                password_text.delete(0, END)
+    website = website_text.get()
+    email = email_text.get()
+    password = password_text.get()
+    if len(website) == 0 or len(password) == 0:
+        messagebox.showwarning(title="Warning", message="Please make sure no fields are empty")
+    elif email == "123@abc.com":
+        messagebox.showwarning(title="Warning", message="You forgot to enter your email")
+    else:
 
-                file.write(f"{website} | {email} | {password_}\n")
+        is_ok = messagebox.askokcancel(title="Confirm Data",
+                                       message=f"Please check the details\nWebsite: {website}\nEmail: {email}\nPassword:{password}\nIs this okay?")
+        if is_ok:
+            website_text.delete(0, END)
+            password_text.delete(0, END)
+            new_data = {website: {"email": email, "password": password}}
+            try:
+                file = open("D:/Python/Password Manager/passwords.json", mode="r")
+            except FileNotFoundError:
+                file = open("D:/Python/Password Manager/passwords.json", mode="w")
+                json.dump(new_data, file, indent=4)
+                file.close()
+                file = open("D:/Python/Password Manager/passwords.json", mode="r")
+            else:
+                data = json.load(file)
+                file.close()
+                with open("D:/Python/Password Manager/passwords.json", mode="w"):
+                    data.update(new_data)
+                    json.dump(new_data, file, indent=4)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -82,8 +121,8 @@ password_label.grid(row=3, column=0)
 #Entries
 
 website_text = ttk.Entry(window, foreground=TEXT_COLOR)
-website_text.config(width=52)
-website_text.grid(row=1, column=1, columnspan=2)
+website_text.config(width=30)
+website_text.grid(row=1, column=1)
 website_text.focus()
 
 
@@ -105,12 +144,15 @@ email_text.config(width=52)
 email_text.grid(row=2, column=1, columnspan=2)
 
 password_text = ttk.Entry(window, foreground=TEXT_COLOR)
-password_text.config(width=27)
+password_text.config(width=30)
 password_text.grid(row=3, column=1)
 
 #Buttons
+search_button = ttk.Button(window, text="Search", width=20, cursor="hand1", command=search_password)
+search_button.grid(row=1, column=2)
 
-generate_password_button = ttk.Button(window, text="Generate Password", width=24, cursor="hand1", command=generate_password)
+generate_password_button = ttk.Button(window, text="Generate Password", width=20, cursor="hand1",
+                                      command=generate_password)
 generate_password_button.grid(row=3, column=2)
 
 add_button = ttk.Button(window, text="Add", width=52, cursor="hand1", command=add_password)
