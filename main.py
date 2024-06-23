@@ -15,8 +15,6 @@ TEXT_COLOR = RED
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
-#Password Generator Project
-
 def generate_password():
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
                'v',
@@ -53,14 +51,10 @@ def search_password():
         else:
             try:
                 website_data = file_data[search_parameter]
-                print(website_data)
             except KeyError:
                 messagebox.showinfo(title="Sorry", message="There is no registered password against this website")
             else:
-                email_text.delete(0, END)
-                password_text.delete(0, END)
-                email_text.insert(0, website_data["email"])
-                password_text.insert(0, website_data["password"])
+                messagebox.showinfo(title="Details Found", message=f"For the website \"{search_parameter}\"\nEmail:{website_data["email"]}\nPassword:{website_data["password"]}\n")
                 pyperclip.copy(website_data["password"])
 
 
