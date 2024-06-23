@@ -54,11 +54,19 @@ def search_password():
             except KeyError:
                 messagebox.showinfo(title="Sorry", message="There is no registered password against this website")
             else:
-                messagebox.showinfo(title="Details Found", message=f"For the website \"{search_parameter}\"\nEmail:{website_data["email"]}\nPassword:{website_data["password"]}\n")
+                messagebox.showinfo(title="Details Found", message=f"For the website \"{search_parameter}\"\nEmail:{website_data["email"]}\nPassword:{website_data["password"]}\nNote: Password has been coptied to clipboard")
                 pyperclip.copy(website_data["password"])
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
+def is_file_empty(filename):
+    with open(filename) as file:
+        char = file.read(1)
+        if not char:
+            raise ValueError(f"File {filename} was empty")
+        else: 
+            pass
+        
 def add_password():
     website = website_text.get()
     email = email_text.get()
@@ -76,17 +84,15 @@ def add_password():
             password_text.delete(0, END)
             new_data = {website: {"email": email, "password": password}}
             try:
-                file = open("D:/Python/Password Manager/passwords.json", mode="r")
-            except FileNotFoundError:
-                file = open("D:/Python/Password Manager/passwords.json", mode="w")
-                json.dump(new_data, file, indent=4)
-                file.close()
-                file = open("D:/Python/Password Manager/passwords.json", mode="r")
-            else:
-                data = json.load(file)
-                file.close()
-                with open("D:/Python/Password Manager/passwords.json", mode="w"):
+                is_file_empty("D:/Python/Password Manager/passwords.json")
+                with open("D:/Python/Password Manager/passwords.json", mode="r") as file:
+                    data = json.load(file)
                     data.update(new_data)
+            except (FileNotFoundError, ValueError):
+                with open("D:/Python/Password Manager/passwords.json", mode="w") as file:
+                    json.dump(new_data, file, indent=4)
+            else:
+                with open("D:/Python/Password Manager/passwords.json", mode="w") as file:
                     json.dump(new_data, file, indent=4)
 
 
