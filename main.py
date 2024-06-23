@@ -54,7 +54,8 @@ def search_password():
             except KeyError:
                 messagebox.showinfo(title="Sorry", message="There is no registered password against this website")
             else:
-                messagebox.showinfo(title="Details Found", message=f"For the website \"{search_parameter}\"\nEmail:{website_data["email"]}\nPassword:{website_data["password"]}\nNote: Password has been coptied to clipboard")
+                messagebox.showinfo(title="Details Found",
+                                    message=f"Website \"{search_parameter}\"\nEmail: {website_data["email"]}\nPassword :{website_data["password"]}\nNote: Password has been coptied to clipboard")
                 pyperclip.copy(website_data["password"])
 
 
@@ -64,9 +65,10 @@ def is_file_empty(filename):
         char = file.read(1)
         if not char:
             raise ValueError(f"File {filename} was empty")
-        else: 
+        else:
             pass
-        
+
+
 def add_password():
     website = website_text.get()
     email = email_text.get()
@@ -82,16 +84,26 @@ def add_password():
         if is_ok:
             website_text.delete(0, END)
             password_text.delete(0, END)
-            new_data = {website: {"email": email, "password": password}}
+            new_data = {
+                website:
+                    {
+                        "email": email,
+                        "password": password
+                    }
+            }
             try:
+                overwrite = True
                 is_file_empty("D:/Python/Password Manager/passwords.json")
                 with open("D:/Python/Password Manager/passwords.json", mode="r") as file:
                     data = json.load(file)
-                    data.update(new_data)
+                    if website in data:
+                        overwrite = messagebox.askyesno(title="Confirmation",
+                                                        message="Details for this website already exist\nAre you sure you wish to overwrite?")
+                    if overwrite:
+                        data.update(new_data)
+                        with open("D:/Python/Password Manager/passwords.json", mode="w") as file:
+                            json.dump(data, file, indent=4)
             except (FileNotFoundError, ValueError):
-                with open("D:/Python/Password Manager/passwords.json", mode="w") as file:
-                    json.dump(new_data, file, indent=4)
-            else:
                 with open("D:/Python/Password Manager/passwords.json", mode="w") as file:
                     json.dump(new_data, file, indent=4)
 
